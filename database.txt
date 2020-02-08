@@ -1,0 +1,35 @@
+CREATE DATABASE webfingerprint CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE webfingerprint;
+CREATE TABLE websites (
+	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	title VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE INDEX idx_websites_title ON websites(title);
+
+
+CREATE TABLE subs (
+	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	title VARCHAR(500) NOT NULL UNIQUE,
+	websiteid INTEGER NOT NULL
+);
+CREATE INDEX idx_subs_websiteid ON subs(websiteid);
+
+
+GRANT SELECT, INSERT ON webfingerprint.* TO 'web'@'%';
+
+
+
+1 prepare
+	url url-file
+	list
+	depth
+
+2 capture
+	number-instances
+	timeout
+	headless
+	proxy
+	proxy-type
+
+3 visualize
