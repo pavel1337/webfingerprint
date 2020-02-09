@@ -51,6 +51,20 @@ func (m *SubModel) List() ([]*models.Sub, error) {
 	return subs, nil
 }
 
+func (m *SubModel) GetById(subid int) (*models.Sub, error) {
+	stmt := `SELECT id, title, websiteid FROM subs WHERE id = ?`
+
+	row := m.DB.QueryRow(stmt, subid)
+	s := &models.Sub{}
+	err := row.Scan(&s.ID, &s.Title, &s.WebsiteId)
+	if err == sql.ErrNoRows {
+		return nil, models.ErrNoRecord
+	} else if err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
 func (m *SubModel) GetByWebsiteId(websiteid int) ([]*models.Sub, error) {
 	stmt := `SELECT id, title, websiteid FROM subs WHERE websiteid = ?`
 	rows, err := m.DB.Query(stmt, websiteid)

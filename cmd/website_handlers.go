@@ -7,13 +7,13 @@ import (
 )
 
 func (app *application) Websites() {
-	if strings.TrimSpace(app.config.Website) != "" {
-		app.load_website(app.config.Website)
+	if strings.TrimSpace(app.flags.Website) != "" {
+		app.load_website(app.flags.Website)
 	}
-	if strings.TrimSpace(app.config.Websites) != "" {
-		app.load_websites(app.config.Websites)
+	if strings.TrimSpace(app.flags.Websites) != "" {
+		app.load_websites(app.flags.Websites)
 	}
-	if app.config.List {
+	if app.flags.List {
 		app.list_websites()
 	}
 }

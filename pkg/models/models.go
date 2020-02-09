@@ -16,3 +16,10 @@ type Sub struct {
 	Title     string
 	WebsiteId int
 }
+
+type Pcap struct {
+	ID    int
+	Path  string
+	SubId int
+	Proxy string
+}

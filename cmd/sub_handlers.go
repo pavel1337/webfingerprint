@@ -8,14 +8,14 @@ import (
 )
 
 func (app *application) Subs() {
-	if app.config.Generate {
-		app.generetaSubs(app.config.Depth)
+	if app.flags.GenerateSubs {
+		app.generetaSubs(app.flags.Depth)
 	}
-	if app.config.ListAllSubs {
+	if app.flags.ListAllSubs {
 		app.listSubs()
 	}
-	if strings.TrimSpace(app.config.ListSubs) != "" {
-		app.listSubsByTitle(app.config.ListSubs)
+	if strings.TrimSpace(app.flags.ListSubs) != "" {
+		app.listSubsByTitle(app.flags.ListSubs)
 	}
 }
 
@@ -23,12 +23,14 @@ func (app *application) generetaSubs(depth int) {
 	w, err := app.websites.List()
 	if err != nil {
 		app.errorLog.Println(err)
+		return
 	}
 	for _, website := range w {
 		intialurl := "https://" + website.Title
 		subs, err := app.subs.GetByWebsiteId(website.ID)
 		if err != nil {
 			app.errorLog.Println(err)
+			continue
 		}
 		if len(subs) == 0 {
 			_, err := app.subs.Insert(intialurl, website.ID)
@@ -59,6 +61,7 @@ func (app *application) listSubsByTitle(website string) {
 	subs, err := app.subs.GetByWebsiteId(w.ID)
 	if err != nil {
 		app.errorLog.Println(err)
+		return
 	}
 	for _, sub := range subs {
 		fmt.Println(sub.ID, sub.Title)
@@ -69,6 +72,7 @@ func (app *application) listSubs() {
 	subs, err := app.subs.List()
 	if err != nil {
 		app.errorLog.Println(err)
+		return
 	}
 	for _, sub := range subs {
 		fmt.Println(sub.ID, sub.Title)

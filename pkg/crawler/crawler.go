@@ -13,7 +13,7 @@ import (
 func getHref(t html.Token) (ok bool, href string) {
 	for _, a := range t.Attr {
 		if a.Key == "href" {
-			href = a.Val
+			href = strings.TrimRight((strings.TrimSpace(a.Val)), "/")
 			ok = true
 		}
 	}
@@ -69,6 +69,15 @@ func crawl(link string) []string {
 				continue
 			}
 			if strings.Contains(href, ".zip") {
+				continue
+			}
+			if strings.Contains(href, "javascript") {
+				continue
+			}
+			if strings.Contains(href, "#") {
+				continue
+			}
+			if strings.Contains(href, "?") {
 				continue
 			}
 			links = append(links, href)

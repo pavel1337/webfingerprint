@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
+	"time"
 )
 
 func IsUrl(str string) bool {
@@ -25,6 +27,23 @@ func IsUrl(str string) bool {
 	return true
 }
 
+func CheckProxy(str string) error {
+	req, err := http.NewRequest("GET", "https://duckduckgo.com", nil)
+	if err != nil {
+		return err
+	}
+	proxyUrl, err := url.Parse(str)
+	if err != nil {
+		return err
+	}
+	client := &http.Client{Timeout: time.Second * 10, Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
+	_, err = client.Do(req)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func ReadFile(s string) ([]string, error) {
 	var list []string
 	file, err := os.Open(s)
@@ -35,7 +54,8 @@ func ReadFile(s string) ([]string, error) {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		list = append(list, scanner.Text())
+		href := strings.TrimRight((strings.TrimSpace(scanner.Text())), "/")
+		list = append(list, href)
 	}
 
 	if err := scanner.Err(); err != nil {

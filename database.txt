@@ -15,6 +15,15 @@ CREATE TABLE subs (
 );
 CREATE INDEX idx_subs_websiteid ON subs(websiteid);
 
+CREATE TABLE pcaps (
+	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	path VARCHAR(500) NOT NULL UNIQUE,
+	subid INTEGER NOT NULL,
+	proxy VARCHAR(100) NOT NULL
+);
+CREATE INDEX idx_pcaps_subid ON pcaps(subid);
+CREATE INDEX idx_pcaps_proxy ON pcaps(proxy);
+
 
 GRANT SELECT, INSERT ON webfingerprint.* TO 'web'@'%';
 
