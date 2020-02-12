@@ -21,6 +21,14 @@ CREATE TABLE pcaps (
 	subid INTEGER NOT NULL,
 	proxy VARCHAR(100) NOT NULL
 );
+
+CREATE TABLE features (
+	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	pcapid INTEGER NOT NULL,
+	featureset JSON NOT NULL
+);
+
+
 CREATE INDEX idx_pcaps_subid ON pcaps(subid);
 CREATE INDEX idx_pcaps_proxy ON pcaps(proxy);
 
@@ -42,3 +50,4 @@ GRANT SELECT, INSERT ON webfingerprint.* TO 'web'@'%';
 	proxy-type
 
 3 visualize
+

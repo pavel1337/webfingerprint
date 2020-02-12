@@ -3,7 +3,6 @@ package capturer
 import (
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"net"
 	"net/url"
@@ -75,7 +74,11 @@ func OpenBrowser(link, eth, proxyString string, timeout int, headless bool) (str
 	_ = wd.SetPageLoadTimeout(time.Duration(timeout) * time.Second)
 	wd.Refresh()
 	stop := make(chan struct{})
-	dirpath := "captured_traffic/" + getHostname(link) + "/"
+	hostname, err := getHostname(link)
+	if err != nil {
+		return "", err
+	}
+	dirpath := "captured_traffic/" + hostname + "/"
 	os.MkdirAll(dirpath, os.ModePerm)
 	// Open output pcap file and write header
 	savepath := dirpath + strconv.Itoa(randomInt(100000, 999999)) + ".pcap"
@@ -181,7 +184,7 @@ func captureTraffic(savepath, eth string, stop chan struct{}) {
 	handle, _ = pcap.OpenLive(deviceName, snapshotLen, promiscuous, timeout)
 	defer handle.Close()
 
-	var filter string = "tcp and port 443"
+	var filter string = "tcp"
 	handle.SetBPFFilter(filter)
 	// Start processing packets
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
@@ -214,12 +217,12 @@ func pickUnusedPort() (int, error) {
 	return port, nil
 }
 
-func getHostname(s string) string {
+func getHostname(s string) (string, error) {
 	u, err := url.Parse(s)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	return u.Hostname()
+	return u.Hostname(), nil
 }
 
 func isClosed(ch <-chan struct{}) bool {

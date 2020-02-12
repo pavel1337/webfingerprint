@@ -54,6 +54,7 @@ func (app *application) capturePcaps(n int, headless bool, proxyString, proxyTyp
 			continue
 		}
 		for i := 1; i <= (n - len(p)); i++ {
+			app.infoLog.Println("Capturing:", sub.Title)
 			path, err := capturer.OpenBrowser(sub.Title, app.flags.Eth, proxyString, 60, headless)
 			if err != nil {
 				e++

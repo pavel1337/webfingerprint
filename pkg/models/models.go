@@ -23,3 +23,14 @@ type Pcap struct {
 	SubId int
 	Proxy string
 }
+
+type Feature struct {
+	ID             int
+	PcapID         int
+	FeatureSet     []byte
+	FeatureSetJson FeatureSetJson
+}
+
+type FeatureSetJson struct {
+	Cumul [50]int `json:"int"`
+}
