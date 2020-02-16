@@ -18,19 +18,11 @@ type Sub struct {
 }
 
 type Pcap struct {
-	ID    int
-	Path  string
-	SubId int
-	Proxy string
-}
-
-type Feature struct {
-	ID             int
-	PcapID         int
-	FeatureSet     []byte
-	FeatureSetJson FeatureSetJson
-}
-
-type FeatureSetJson struct {
-	Cumul [50]int `json:"int"`
+	ID      int
+	Path    string
+	SubId   int
+	Proxy   string
+	BCumul  []byte
+	Cumul   [50]int `json:"int"`
+	Outlier bool
 }

@@ -7,6 +7,8 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"regexp"
+	"sort"
 	"strconv"
 	"time"
 
@@ -17,6 +19,15 @@ import (
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
 )
+
+type DataSP struct {
+	IncomingPackets int
+	OutgoingPackets int
+	IncomingLength  int
+	OutgoingLength  int
+	CumulSeq        map[int]int
+	TestCumulSeq    [50]int
+}
 
 func CheckPerms(eth string) error {
 	err := checkInterface(eth)
@@ -39,15 +50,16 @@ func CheckPerms(eth string) error {
 	return nil
 }
 
-func OpenBrowser(link, eth, proxyString string, timeout int, headless bool) (string, error) {
+func OpenBrowser(link, eth, proxyString string, timeout int, headless bool) ([50]int, string, error) {
+	var cumul [50]int
 	port, err := pickUnusedPort()
 	if err != nil {
-		return "", err
+		return cumul, "", err
 	}
 	var opts []selenium.ServiceOption
 	service, err := selenium.NewChromeDriverService("chromedriver", port, opts...)
 	if err != nil {
-		return "", err
+		return cumul, "", err
 	}
 	defer service.Stop()
 
@@ -69,31 +81,58 @@ func OpenBrowser(link, eth, proxyString string, timeout int, headless bool) (str
 	})
 	wd, err := selenium.NewRemote(caps, "http://127.0.0.1:"+strconv.Itoa(port)+"/wd/hub")
 	if err != nil {
-		return "", err
+		return cumul, "", err
 	}
-	_ = wd.SetPageLoadTimeout(time.Duration(timeout) * time.Second)
-	wd.Refresh()
-	stop := make(chan struct{})
+	wd.SetPageLoadTimeout(time.Duration(timeout) * time.Second)
 	hostname, err := getHostname(link)
 	if err != nil {
-		return "", err
+		return cumul, "", err
 	}
 	dirpath := "captured_traffic/" + hostname + "/"
 	os.MkdirAll(dirpath, os.ModePerm)
 	// Open output pcap file and write header
 	savepath := dirpath + strconv.Itoa(randomInt(100000, 999999)) + ".pcap"
-	go captureTraffic(savepath, eth, stop)
+	datachan := make(chan DataSP)
+	stop := make(chan struct{})
+	go captureTraffic(savepath, eth, stop, datachan)
 	wd.Get(link)
 	_, err = wd.FindElement(selenium.ByXPATH, `/html/body`)
 	if err != nil {
 		close(stop)
 		os.Remove(savepath)
-		return "", err
+		return cumul, "", err
 	}
 	close(stop)
 	_ = wd.Quit()
 
-	return savepath, nil
+	tempdata := <-datachan
+	tempdata.TestCumulSeqMaker()
+	cumul = tempdata.TestCumulSeq
+	if cumul[49] == 0 {
+		return cumul, "", errors.New("pcap file is broken")
+	}
+	return cumul, savepath, nil
+}
+
+func (d *DataSP) TestCumulSeqMaker() {
+	keys := make([]float64, 0, len(d.CumulSeq))
+	values := make([]float64, 0, len(d.CumulSeq))
+	for k := range d.CumulSeq {
+		keys = append(keys, float64(k))
+	}
+	sort.Float64s(keys)
+	for _, k := range keys {
+		values = append(values, float64(d.CumulSeq[int(k)]))
+	}
+	for i := 0; i < len(d.TestCumulSeq); i++ {
+		x := float64(i) * (float64(len(keys)) / 50.0)
+		x0 := int(x)
+		x1 := int(x + 1.0)
+		y0 := float64(d.CumulSeq[x0])
+		y1 := float64(d.CumulSeq[x1])
+		y := (y0*(float64(x1)-x) + y1*(x-float64(x0))) / (float64(x1) - float64(x0))
+		d.TestCumulSeq[i] = int(y)
+	}
 }
 
 func checkInterface(i string) error {
@@ -165,16 +204,23 @@ func externalIP() (string, error) {
 	return "", errors.New("are you connected to the network?")
 }
 
-func captureTraffic(savepath, eth string, stop chan struct{}) {
+func captureTraffic(savepath, eth string, stop chan struct{}, datachan chan DataSP) {
 	var (
-		deviceName  string = eth
-		snapshotLen int32  = 1024
-		promiscuous bool   = false
-		// err         error
-		timeout time.Duration = -1 * time.Second
-		handle  *pcap.Handle
+		deviceName  string        = eth
+		snapshotLen int32         = 1024
+		promiscuous bool          = false
+		timeout     time.Duration = -1 * time.Second
+		handle      *pcap.Handle
+		pc          int = 0
+		cl          int = 0
 	)
+	d := NewDataSP()
+	d.IncomingPackets = 0
+	d.OutgoingPackets = 0
+	d.IncomingLength = 0
+	d.OutgoingLength = 0
 
+	localip, _ := externalIP()
 	f, _ := os.Create(savepath)
 	defer f.Close()
 	w := pcapgo.NewWriter(f)
@@ -193,7 +239,64 @@ func captureTraffic(savepath, eth string, stop chan struct{}) {
 		if isClosed(stop) {
 			break
 		}
+		if packet.ApplicationLayer() != nil {
+			nl := gopacket.LayerString(packet.NetworkLayer())
+			pl, err := packetLength(nl)
+			if err != nil {
+				continue
+			}
+			ifo, err := ifOutgoing(nl, localip)
+			if err != nil {
+				continue
+			}
+			if ifo {
+				cl -= pl
+				d.OutgoingPackets++
+				d.OutgoingLength += pl
+			} else {
+				cl += pl
+				d.IncomingPackets++
+				d.IncomingLength += pl
+			}
+		}
+		pc++
+		d.CumulSeq[pc] = cl
 	}
+	datachan <- d
+	close(datachan)
+}
+
+func NewDataSP() DataSP {
+	var d DataSP
+	d.CumulSeq = make(map[int]int)
+	return d
+}
+
+func ifOutgoing(s string, localip string) (bool, error) {
+	pattern := regexp.MustCompile(`SrcIP=[\d.]+`)
+	srcip := pattern.FindString(s)
+	m, err := url.ParseQuery(srcip)
+	if err != nil {
+		return false, err
+	}
+	if m["SrcIP"][0] == localip {
+		return true, nil
+	}
+	return false, nil
+}
+
+func packetLength(s string) (int, error) {
+	pattern := regexp.MustCompile(`Length=[\d.]+`)
+	srcip := pattern.FindString(s)
+	m, err := url.ParseQuery(srcip)
+	if err != nil {
+		return 0, err
+	}
+	i, err := strconv.Atoi(m["Length"][0])
+	if err != nil {
+		return 0, err
+	}
+	return i, nil
 }
 
 func randomInt(min, max int) int {

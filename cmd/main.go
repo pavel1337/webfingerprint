@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -17,7 +18,6 @@ type application struct {
 	websites *mysql.WebsiteModel
 	subs     *mysql.SubModel
 	pcaps    *mysql.PcapModel
-	features *mysql.FeatureModel
 }
 
 func main() {
@@ -37,7 +37,6 @@ func main() {
 		websites: &mysql.WebsiteModel{DB: db},
 		subs:     &mysql.SubModel{DB: db},
 		pcaps:    &mysql.PcapModel{DB: db},
-		features: &mysql.FeatureModel{DB: db},
 	}
 	if f.Mode == "prepare" {
 		app.Websites()
@@ -45,7 +44,7 @@ func main() {
 	} else if f.Mode == "capture" {
 		app.Pcaps()
 	} else if f.Mode == "visualize" {
-		app.Feautures()
+		fmt.Println("wait")
 	} else {
 		Usage()
 	}

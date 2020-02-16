@@ -14,6 +14,9 @@ func (app *application) Subs() {
 	if app.flags.ListAllSubs {
 		app.listSubs()
 	}
+	if app.flags.ListSubsWithPcap {
+		app.listSubsByProxy()
+	}
 	if strings.TrimSpace(app.flags.ListSubs) != "" {
 		app.listSubsByTitle(app.flags.ListSubs)
 	}
@@ -76,5 +79,34 @@ func (app *application) listSubs() {
 	}
 	for _, sub := range subs {
 		fmt.Println(sub.ID, sub.Title)
+	}
+}
+
+func (app *application) listSubsByProxy() {
+	subs, err := app.subs.List()
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+	proxies, err := app.pcaps.ListProxies()
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+	fmt.Printf("%v\t%v\t%v\t%v\n", "clean", "out", "proxy", "url")
+	for _, sub := range subs {
+		for _, proxy := range proxies {
+			pcapsWithOutOutlier, err := app.pcaps.GetBySubIdAndProxyAndNotOutlier(sub.ID, proxy)
+			if err != nil {
+				app.errorLog.Println(err)
+				return
+			}
+			pcaps, err := app.pcaps.GetBySubIdAndProxy(sub.ID, proxy)
+			if err != nil {
+				app.errorLog.Println(err)
+				return
+			}
+			fmt.Printf("%v\t%v\t%v\t%v\n", len(pcapsWithOutOutlier), (len(pcaps) - len(pcapsWithOutOutlier)), proxy, sub.Title)
+		}
 	}
 }

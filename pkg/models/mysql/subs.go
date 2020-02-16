@@ -65,6 +65,32 @@ func (m *SubModel) GetById(subid int) (*models.Sub, error) {
 	return s, nil
 }
 
+func (m *SubModel) GetByUrl(url string) (*models.Sub, error) {
+	stmt := `SELECT id, title, websiteid FROM subs WHERE title = ?`
+
+	row := m.DB.QueryRow(stmt, url)
+	s := &models.Sub{}
+	err := row.Scan(&s.ID, &s.Title, &s.WebsiteId)
+	if err == sql.ErrNoRows {
+		return nil, models.ErrNoRecord
+	} else if err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
+func (m *SubModel) DeleteById(subid int) error {
+	stmt := `DELETE FROM subs WHERE id = ?`
+
+	_, err := m.DB.Exec(stmt, subid)
+	if err == sql.ErrNoRows {
+		return models.ErrNoRecord
+	} else if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *SubModel) GetByWebsiteId(websiteid int) ([]*models.Sub, error) {
 	stmt := `SELECT id, title, websiteid FROM subs WHERE websiteid = ?`
 	rows, err := m.DB.Query(stmt, websiteid)

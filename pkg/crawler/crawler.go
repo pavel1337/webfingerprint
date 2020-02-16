@@ -80,6 +80,9 @@ func crawl(link string) []string {
 			if strings.Contains(href, "?") {
 				continue
 			}
+			if strings.Contains(href[6:], ":") {
+				continue
+			}
 			links = append(links, href)
 		}
 	}

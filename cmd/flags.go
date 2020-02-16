@@ -7,24 +7,28 @@ import (
 )
 
 type Flags struct {
-	Mode              string
-	Dsn               string
-	Website           string
-	Websites          string
-	List              bool
-	GenerateSubs      bool
-	Depth             int
-	ListSubs          string
-	ListAllSubs       bool
-	Eth               string
-	NumberOfInstances int
-	CapturePcaps      bool
-	Headless          bool
-	ListAllPcaps      bool
-	ProxyString       string
-	ProxyType         string
-	LocalIp           string
-	ExtractFeatures   bool
+	Mode                       string
+	Dsn                        string
+	Website                    string
+	Websites                   string
+	List                       bool
+	GenerateSubs               bool
+	Depth                      int
+	ListSubs                   string
+	ListSubsWithPcap           bool
+	ListAllSubs                bool
+	Eth                        string
+	NumberOfInstances          int
+	CapturePcaps               bool
+	Headless                   bool
+	ListAllPcaps               bool
+	ProxyString                string
+	ProxyType                  string
+	Clean                      bool
+	VisualizeByUrl             string
+	VisualizeByUrlAndProxy     string
+	Path                       string
+	VisualizeByWebsiteAndProxy string
 }
 
 var Usage = func() {
@@ -39,6 +43,7 @@ var Usage = func() {
 	fmt.Println("   -generate-subs\n", `      generate sub-pages`)
 	fmt.Println("   -depth\n", `      depth of sub-pages`, `(default "4")`)
 	fmt.Println("   -list-subs-by-website\n", `      list sub-pages for website from database`)
+	fmt.Println("   -list-subs-with-pcap-info\n", `      list sub-pages with pcap info`)
 	fmt.Println("   -list-all-subpages\n", `      list urls from database`)
 
 	fmt.Println("\noptions for capture mode:")
@@ -51,10 +56,12 @@ var Usage = func() {
 	fmt.Println("   -list-all-pcaps\n", `      list all pcaps from database`)
 
 	fmt.Println("\noptions for visualize mode:")
-	fmt.Println("   -local-ip\n", `      local ip used for capture`, `(default will be taken automatically)`)
-	fmt.Println("   -extract-features\n", `      extract features out of pcaps in database`)
+	fmt.Println("   -clean\n", `      clean outliers`)
+	fmt.Println("   -by-url\n", `      visualize traffic for one url`, `(example "https://www.dmca.com/dashboard")`)
+	fmt.Println("   -by-url-proxy\n", `      visualize traffic for one url`, `(example "https://www.dmca.com/dashboard")`)
+	fmt.Println("   -by-website-proxy\n", `      visualize traffic for one website`, `(example "www.dmca.com")`)
+	fmt.Println("   -path\n", `      path to the plot`, `(example "plot.png")`)
 	// fmt.Println("   -by-website\n", `      visualize traffic for one website`, `(example "www.google.de")`)
-	// fmt.Println("   -by-url\n", `      visualize traffic for one url`, `(example "https://www.dmca.com/dashboard")`)
 
 	fmt.Println("\nExamples:")
 	fmt.Printf("    %v -mode prepare -url https://google.de -proxy http://127.0.0.1:4001 -i eth0\n", os.Args[0])
@@ -72,6 +79,7 @@ func ParseFlags() Flags {
 	flag.BoolVar(&f.GenerateSubs, "generate-subs", false, `generate sub-pages`)
 	flag.IntVar(&f.Depth, "depth", 4, `depth of sub-pages`)
 	flag.StringVar(&f.ListSubs, "list-subs-by-website", "", `list sub-pages for website from database`)
+	flag.BoolVar(&f.ListSubsWithPcap, "list-subs-with-pcap-info", false, `list sub-pages with pcap info`)
 	flag.BoolVar(&f.ListAllSubs, "list-all-subpages", false, `list urls from database`)
 	flag.StringVar(&f.Eth, "dev", "eth0", `interface to listen on while capture`)
 	flag.IntVar(&f.NumberOfInstances, "num", 10, `number of instances to capture`)
@@ -80,8 +88,11 @@ func ParseFlags() Flags {
 	flag.StringVar(&f.ProxyString, "proxy-string", "", `proxy string to use`)
 	flag.StringVar(&f.ProxyType, "proxy-type", "none", `proxy type for the database`)
 	flag.BoolVar(&f.ListAllPcaps, "list-all-pcaps", false, `list all pcaps from database`)
-	flag.StringVar(&f.LocalIp, "local-ip", "", `local ip used for capture`)
-	flag.BoolVar(&f.ExtractFeatures, "extract-features", false, `extract features out of pcaps in database`)
+	flag.BoolVar(&f.Clean, "clean", false, `clean outliers`)
+	flag.StringVar(&f.VisualizeByUrl, "by-url", "", `visualize traffic for one url (example "https://www.dmca.com/dashboard")`)
+	flag.StringVar(&f.VisualizeByUrlAndProxy, "by-url-proxy", "", `visualize traffic for one url (example "https://www.dmca.com/dashboard")`)
+	flag.StringVar(&f.VisualizeByWebsiteAndProxy, "by-website-proxy", "", `visualize traffic for one website (example "www.dmca.com")`)
+	flag.StringVar(&f.Path, "path", "", `path to the plot (example "plot.png")`)
 
 	flag.Parse()
 	return f
