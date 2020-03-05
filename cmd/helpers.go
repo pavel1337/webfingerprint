@@ -11,6 +11,10 @@ import (
 	"github.com/montanaflynn/stats"
 )
 
+func IsEmpty(str string) bool {
+	return strings.TrimSpace(str) == ""
+}
+
 func IsUrl(str string) bool {
 	u, err := url.Parse(str)
 	if err != nil {

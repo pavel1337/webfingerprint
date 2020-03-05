@@ -135,6 +135,30 @@ func (d *DataSP) TestCumulSeqMaker() {
 	}
 }
 
+func GetInterface() (string, error) {
+	// Find all devices
+	devices, err := pcap.FindAllDevs()
+	if err != nil {
+		return "", err
+	}
+	localip, err := externalIP()
+	if err != nil {
+		return "", err
+	}
+	var devicesNames []string
+	var suggestion string
+	// Print device information
+	for _, device := range devices {
+		devicesNames = append(devicesNames, device.Name)
+		for _, address := range device.Addresses {
+			if localip == address.IP.String() {
+				suggestion = device.Name
+			}
+		}
+	}
+	return suggestion, nil
+}
+
 func checkInterface(i string) error {
 	// Find all devices
 	devices, err := pcap.FindAllDevs()
@@ -230,7 +254,7 @@ func captureTraffic(savepath, eth string, stop chan struct{}, datachan chan Data
 	handle, _ = pcap.OpenLive(deviceName, snapshotLen, promiscuous, timeout)
 	defer handle.Close()
 
-	var filter string = "tcp"
+	var filter string = "tcp port 443 or 9001"
 	handle.SetBPFFilter(filter)
 	// Start processing packets
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())

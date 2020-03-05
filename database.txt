@@ -1,4 +1,4 @@
-CREATE DATABASE webfingerprint CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE gorm_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE webfingerprint;
 CREATE TABLE websites (
 	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -30,7 +30,7 @@ CREATE INDEX idx_pcaps_subid ON pcaps(subid);
 CREATE INDEX idx_pcaps_proxy ON pcaps(proxy);
 
 
-GRANT SELECT, INSERT, DELETE, UPDATE ON webfingerprint.* TO 'web'@'%';
+GRANT ALL PRIVILEGES ON gorm_test.* TO 'web'@'%';
 
 
 
