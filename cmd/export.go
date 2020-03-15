@@ -19,6 +19,9 @@ func (app *application) Export() {
 	if app.flags.ExportOnlyMainPages && app.flags.ProxyType != "" {
 		app.saveTheDataSetOnlyMainPages(app.flags.ProxyType)
 	}
+	if app.flags.ExportAllByProxy && app.flags.ProxyType != "" {
+		app.saveTheDataSetAllByProxy(app.flags.ProxyType)
+	}
 }
 
 func (app *application) saveTheDataSetAll() {
@@ -52,6 +55,56 @@ func (app *application) saveTheDataSetAll() {
 			csvDataSet = append(csvDataSet, csvData)
 		}
 
+	}
+
+	w := csv.NewWriter(f)
+	w.WriteAll(csvDataSet) // calls Flush internally
+	err = f.Close()
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+	if err := w.Error(); err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+}
+
+func (app *application) saveTheDataSetAllByProxy(proxy string) {
+	f, err := os.Create("dataset.csv")
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+	defer f.Close()
+
+	websites := []models.Website{}
+	app.db.Find(&websites)
+
+	var csvDataSet [][]string
+	for _, website := range websites {
+		subs := []models.Sub{}
+		app.db.Where(models.Sub{WebsiteID: website.ID}).Find(&subs)
+		for _, sub := range subs {
+			pcaps := []models.Pcap{}
+			app.db.Where("outlier = 0").Where(models.Pcap{Proxy: proxy, SubID: sub.ID}).Limit(app.flags.NumberOfInstances).Find(&pcaps)
+			for _, pcap := range pcaps {
+				var cumul [50]int
+				err := json.Unmarshal(pcap.BCumul, &cumul)
+				if err != nil {
+					app.errorLog.Println(err)
+					return
+				}
+
+				var csvData []string
+				for _, i := range cumul {
+					csvData = append(csvData, strconv.Itoa(i))
+				}
+				csvData = append(csvData, (website.Hostname + "_" + pcap.Proxy))
+				csvDataSet = append(csvDataSet, csvData)
+			}
+
+		}
 	}
 
 	w := csv.NewWriter(f)

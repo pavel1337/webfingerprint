@@ -44,7 +44,7 @@ def print_evaluation(y_test,y_pred):
     from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
     print(confusion_matrix(y_test,y_pred))
     print(classification_report(y_test,y_pred))
-    print(accuracy_score(y_test, y_pred))
+    print("Average accuracy score:", accuracy_score(y_test, y_pred))
 
 def main():
     import argparse

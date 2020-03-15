@@ -36,6 +36,7 @@ type Flags struct {
 	LearnRandomForest          bool
 	LearnKNN                   bool
 	DatasetPath                string
+	ExportAllByProxy           bool
 }
 
 var Usage = func() {
@@ -72,6 +73,7 @@ var Usage = func() {
 
 	fmt.Println("\noptions for export mode:")
 	fmt.Println("   -export-all\n", `      export all as csv`)
+	fmt.Println("   -export-by-proxy\n", `      export all by proxy as csv`)
 	fmt.Println("   -export-by-website-proxy\n", `      export by website and proxy as csv`)
 	fmt.Println("   -export-only-main\n", `      export only main pages for given proxy as csv`)
 
@@ -106,6 +108,7 @@ func ParseFlags() Flags {
 	flag.StringVar(&f.VisualizeByWebsiteAndProxy, "by-website-proxy", "", `visualize traffic for one website (example "www.dmca.com")`)
 	flag.StringVar(&f.Path, "path", "", `path to the plot (example "plot.png")`)
 	flag.BoolVar(&f.ExportAll, "export-all", false, `export all as csv`)
+	flag.BoolVar(&f.ExportAllByProxy, "export-by-proxy", false, `export all by proxy as csv`)
 	flag.StringVar(&f.ExportByWebsiteAndProxy, "export-by-website-proxy", "", `export by website and proxy as csv`)
 	flag.BoolVar(&f.ExportOnlyMainPages, "export-only-main", false, `export only main pages for given proxy as csv`)
 	flag.BoolVar(&f.VisualizeOnlyMainPages, "visualize-only-main", false, `visualize only main pages for given proxy`)
