@@ -31,6 +31,11 @@ type Flags struct {
 	VisualizeByWebsiteAndProxy string
 	ExportAll                  bool
 	ExportByWebsiteAndProxy    string
+	ExportOnlyMainPages        bool
+	VisualizeOnlyMainPages     bool
+	LearnRandomForest          bool
+	LearnKNN                   bool
+	DatasetPath                string
 }
 
 var Usage = func() {
@@ -63,12 +68,17 @@ var Usage = func() {
 	fmt.Println("   -by-url-proxy\n", `      visualize traffic for one url`, `(example "https://www.dmca.com/dashboard")`)
 	fmt.Println("   -by-website-proxy\n", `      visualize traffic for one website`, `(example "www.dmca.com")`)
 	fmt.Println("   -path\n", `      path to the plot`, `(example "plot.png")`)
+	fmt.Println("   -visualize-only-main\n", `      visualize only main pages for given proxy`)
 
 	fmt.Println("\noptions for export mode:")
 	fmt.Println("   -export-all\n", `      export all as csv`)
 	fmt.Println("   -export-by-website-proxy\n", `      export by website and proxy as csv`)
+	fmt.Println("   -export-only-main\n", `      export only main pages for given proxy as csv`)
 
-	// fmt.Println("   -by-website\n", `      visualize traffic for one website`, `(example "www.google.de")`)
+	fmt.Println("\noptions for learn mode:")
+	fmt.Println("   -dataset-path\n", `      path to the dataset (defaults to dataset.csv) `)
+	fmt.Println("   -learn-random-forest\n", `      use random forest for ML`)
+	fmt.Println("   -learn-knn\n", `      use knn for ML`)
 }
 
 func ParseFlags() Flags {
@@ -84,7 +94,7 @@ func ParseFlags() Flags {
 	flag.BoolVar(&f.ListSubsWithPcap, "list-subs-with-pcap-info", false, `list sub-pages with pcap info`)
 	flag.BoolVar(&f.ListAllSubs, "list-all-subpages", false, `list urls from database`)
 	flag.StringVar(&f.Eth, "dev", "", `interface to listen on while capture`)
-	flag.IntVar(&f.NumberOfInstances, "num", 10, `number of instances to capture`)
+	flag.IntVar(&f.NumberOfInstances, "num", 20, `number of instances to capture`)
 	flag.BoolVar(&f.CapturePcaps, "capture-pcaps", false, `capture traffic for all subpages in database`)
 	flag.BoolVar(&f.Headless, "headless", false, `capture in headless mode`)
 	flag.StringVar(&f.ProxyString, "proxy-string", "", `proxy string to use`)
@@ -97,6 +107,11 @@ func ParseFlags() Flags {
 	flag.StringVar(&f.Path, "path", "", `path to the plot (example "plot.png")`)
 	flag.BoolVar(&f.ExportAll, "export-all", false, `export all as csv`)
 	flag.StringVar(&f.ExportByWebsiteAndProxy, "export-by-website-proxy", "", `export by website and proxy as csv`)
+	flag.BoolVar(&f.ExportOnlyMainPages, "export-only-main", false, `export only main pages for given proxy as csv`)
+	flag.BoolVar(&f.VisualizeOnlyMainPages, "visualize-only-main", false, `visualize only main pages for given proxy`)
+	flag.StringVar(&f.DatasetPath, "dataset-path", "", `path to the dataset (defaults to dataset.csv)`)
+	flag.BoolVar(&f.LearnRandomForest, "learn-random-forest", false, `use random forest for ML`)
+	flag.BoolVar(&f.LearnKNN, "learn-knn", false, `use knn for ML`)
 
 	flag.Parse()
 	return f

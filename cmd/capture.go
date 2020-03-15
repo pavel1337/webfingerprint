@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pavel1337/wasm/pkg/capturer"
-	"github.com/pavel1337/wasm/pkg/models"
+	"github.com/pavel1337/webfingerprint/pkg/capturer"
+	"github.com/pavel1337/webfingerprint/pkg/models"
 )
 
 func (app *application) Pcaps() {
@@ -104,9 +104,6 @@ func (app *application) cleanOutliers() {
 			for {
 				pcaps := []models.Pcap{}
 				app.db.Where("outlier = 0").Where(models.Pcap{Proxy: proxy, SubID: sub.ID}).Find(&pcaps)
-
-				// app.db.Where(models.Pcap{Proxy: proxy, Outlier: false, SubID: sub.ID}).Find(&pcaps)
-				// app.db.Model(&sub).Where(models.Pcap{Proxy: proxy, Outlier: false}).Related(&pcaps)
 				var lcumuls []int
 				for _, pcap := range pcaps {
 					var cumul [50]int
@@ -132,8 +129,6 @@ func (app *application) cleanOutliers() {
 					for _, Outlier := range Outliers {
 						if float64(cumul[49]) == Outlier {
 							app.db.Model(&pcap).Update(models.Pcap{Outlier: true})
-							// pcap.Outlier = true
-							// app.db.Save(&pcap)
 						}
 					}
 				}

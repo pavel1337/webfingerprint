@@ -103,7 +103,7 @@ func OpenBrowser(link, eth, proxyString string, timeout int, headless bool) ([50
 		return cumul, "", err
 	}
 	close(stop)
-	_ = wd.Quit()
+	wd.Quit()
 
 	tempdata := <-datachan
 	tempdata.TestCumulSeqMaker()
@@ -254,7 +254,7 @@ func captureTraffic(savepath, eth string, stop chan struct{}, datachan chan Data
 	handle, _ = pcap.OpenLive(deviceName, snapshotLen, promiscuous, timeout)
 	defer handle.Close()
 
-	var filter string = "tcp port 443 or 9001"
+	var filter string = "tcp port 443 or 9001 or 80"
 	handle.SetBPFFilter(filter)
 	// Start processing packets
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())

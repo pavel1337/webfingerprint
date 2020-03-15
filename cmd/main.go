@@ -7,7 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/pavel1337/wasm/pkg/models"
+	"github.com/pavel1337/webfingerprint/pkg/models"
 )
 
 type application struct {
@@ -44,6 +44,8 @@ func main() {
 		app.Visualize()
 	} else if f.Mode == "export" {
 		app.Export()
+	} else if f.Mode == "learn" {
+		app.Learn()
 	} else {
 		Usage()
 	}

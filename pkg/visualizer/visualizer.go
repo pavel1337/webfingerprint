@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/wcharczuk/go-chart"
+	chart "github.com/wcharczuk/go-chart"
 	"github.com/wcharczuk/go-chart/drawing"
 )
 
@@ -88,6 +88,9 @@ func SaveTheGraph(arser []chart.Series, path string) error {
 		return err
 	}
 	defer f.Close()
-	graph.Render(chart.PNG, f)
+	err = graph.Render(chart.PNG, f)
+	if err != nil {
+		return err
+	}
 	return nil
 }

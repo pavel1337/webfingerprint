@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/pavel1337/wasm/pkg/crawler"
-	"github.com/pavel1337/wasm/pkg/models"
+	"github.com/pavel1337/webfingerprint/pkg/crawler"
+	"github.com/pavel1337/webfingerprint/pkg/models"
 )
 
 func (app *application) Prepare() {
