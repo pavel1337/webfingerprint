@@ -1,18 +1,29 @@
 # webfingerprint
 study project about wfp attacks on anonymous networks as tor jap etc
 
-Requierments: 
+Requierments for Python:
+1. pip3 (sudo apt install python3-pip)
+
+2. pip3 install -r python/requierments.txt
+
+3. ...
+
+4. Profit!
+
+5. Run python3 python/main.py
+
+Requierments for Go:
 1. Install libpcap-dev
 
-2. Configure mysql server as a backend. Read database.txt 
+2. Configure mysql server as a backend. Read database.txt
 
-3. Install selenium related things using tebeka's selenium package helper: 
+3. Install selenium related things using tebeka's selenium package helper:
 
 ```cd $GOPATH/src/github.com/tebeka/selenium/vendor/```
 
 ```go run init.go --alsologtostderr  --download_browsers --download_latest```
 
-4. Install downloaded Chrome and Chrome-driver binaries in path. For example with creating symlinks from binaries to common $PATH folder under /usr/local/bin. 
+4. Install downloaded Chrome and Chrome-driver binaries in path. For example with creating symlinks from binaries to common $PATH folder under /usr/local/bin.
 
 ```ln -s $GOPATH/src/github.com/tebeka/selenium/vendor/chrome-linux/chrome /usr/local/bin/chrome```
 
@@ -28,4 +39,6 @@ Requierments:
 
 7. ...
 
-8. Profit! 
+8. Profit!
+
+9. bin/wfp --help
